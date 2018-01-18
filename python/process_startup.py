@@ -59,7 +59,7 @@ def process_startup(detector_id, startup_dir):
     tar_us  = [] 
     for f in os.listdir(startup_dir): 
 
-        if f.endswith(".hk.gz") and not is_in_db(detid, f.replace("hk.gz","")): 
+        if f.endswith(".hk.gz") and not is_in_db(detid, f.replace("hk.gz","")) and os.stat("%s/%s" % (startup_dir, f)).st_size: 
             tar_us.append(f.replace("hk.gz",""))
                 
 
