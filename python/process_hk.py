@@ -62,7 +62,7 @@ def process_hk(detector_id, hk_dir):
 
                 tar_us  = [] 
                 for hkfile in os.listdir("%s/%d/%02d/%02d" % (hk_dir,year,month,day)): 
-                    if hkfile.endwsith(".hk.gz"): 
+                    if hkfile.endwsith(".hk.gz") and os.stat("%s/%d/%02d/%02d/%s" % (hk_dir,year,month,day,hkfile)).st_size: 
                         try: 
                             hk_time = int(hkfile.replace(".hk.gz",""))
                             if is_in_db(detector_id,year,month,day,hk_time) == 0:
