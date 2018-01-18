@@ -1,0 +1,4 @@
+Scripts for transferring /archiving data 
+
+The basic idea is that the runs / hk / startup files already processed are stored in a sqlite database, to avoid double counting stuff and allow for deletion later. 
+
