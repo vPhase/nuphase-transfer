@@ -77,26 +77,28 @@ def process_hk(detector_id, hk_dir):
                 tar_us.sort() 
 
                 ## create tar files
-                north_tar_file = "%s%d-%d.tar" % (north_prefix, tar_us[0], tar_us[-1]); 
-                south_tar_file = "%s%d-%d.tar" % (south_prefix_prefix, tar_us[0], tar_us[-1]); 
+                north_tar_file = "%s%d-%d-%d-%d-%d.tar" % (north_prefix, year, month, day, tar_us[0], tar_us[-1]); 
+                south_tar_file = "%s%%d-%d-%d-d-%d.tar" % (south_prefix_prefix, year, month, day, tar_us[0], tar_us[-1]); 
 
                 os.system("tar -cf %s" % (south_tar_file)) 
                 os.system("tar -cf %s"% (north_tar_file)) 
 
                 for hk_time in tar_us: 
 
-                    hk_file = "%s/%d/%02d/%02d/%06d.hk.gz" % (hk_dir,year,month,day,hk_time) 
-                    os.system("tar -rf %s %s" % (north_tar_file, hk_file)) 
-                    os.system("tar -rf %s %s" % (south_tar_file, hk_file)) 
+                    hk_file = "%d/%02d/%02d/%06d.hk.gz" % (hk_dir,year,month,day,hk_time) 
+                    os.system("tar -rf %s -C %s %s" % (north_tar_file, hk_dir, hk_file)) 
+                    os.system("tar -rf %s -C %s %s" % (south_tar_file, hk_dir, hk_file)) 
                     # add to database
                     c.execute("insert into hk(detector, hk_date,hk_time,processed_time) VALUES(?, ?, ?, datetime(now()))" % (detector_id, "%04d-%02d-%02d" % (year,month,day), hk_time))
 
                 #commit
                 c.commit() 
 
-                north_sem = "%s%d-%d.sem" % (north_prefix, tar_us[0], tar_us[-1]); 
-                south_sem = "%s%d-%d.sem" % (south_prefix_prefix, tar_us[0], tar_us[-1]); 
+                north_sem = north_tar_file.replace(".tar",".sem"); 
+                south_sem = south_tar_file.replace(".tar",".sem"); 
 
+                os.system("touch %s" % (north_sem)); 
+                os.system("touch %s" % (south_sem)); 
 
 
     fcntl.flock(lock_file, fcntl.LOCK_UN)
