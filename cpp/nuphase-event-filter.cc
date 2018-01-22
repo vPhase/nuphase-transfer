@@ -39,7 +39,7 @@ int main(int nargs, char ** args)
 
   gzFile in_ev_file = gzopen(args[1],"r"); 
   gzFile in_hd_file = gzopen(args[2],"r"); 
-  gzFile out_ev_file = gzopen(args[3],"w"); 
+  gzFile out_ev_file = gzopen(args[3],"wx9");   
 
   int n_best = atoi(args[4]); 
   int n_random = atoi(args[5]); 
@@ -69,8 +69,10 @@ int main(int nargs, char ** args)
     }
   }
 
-  std::sort(rf_events.begin(), rf_events.end(), compare_headers); 
+  gzclose(in_ev_file); 
+  gzclose(in_hd_file); 
 
+  std::sort(rf_events.begin(), rf_events.end(), compare_headers); 
   //write out the n best (if they exist) 
   for (int i = 0; i < std::min(n_best,(int)rf_events.size()); i++)
   {
@@ -100,8 +102,6 @@ int main(int nargs, char ** args)
     }
   }
 
-  gzclose(in_ev_file); 
-  gzclose(in_hd_file); 
   gzclose(out_ev_file); 
 } 
 
