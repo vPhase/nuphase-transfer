@@ -37,7 +37,7 @@ def get_int_dirs(path):
 
 
 def is_in_db(detid, year, month, day, hk_time): 
-    c.execute("select count(id) from hk where detector=? and hk_date=? and hk_time=?", ( detid, "%04d-%02d-%02d" %( year,month, day), hk_time))
+    c.execute("select count(id) from hk where hk_date=? and hk_time=? and detector=?", ( "%04d-%02d-%02d" %( year,month, day), hk_time, det_id))
     return int(c.fetchone()[0]) 
 
 # e.g. process_hk(1, "/home/radio/data/nuphase01/raw_data/hk/") 

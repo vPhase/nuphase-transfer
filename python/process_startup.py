@@ -76,9 +76,9 @@ def process_startup(detector_id, startup_dir):
         os.system("tar -cf %s"% (north_tar_file)) 
 
         for name in tar_us: 
-            startup_file = "%s/%s.hk.gz" % (startup_dir,name) 
-            os.system("tar -rf %s %s" % (north_tar_file, startup_file)) 
-            os.system("tar -rf %s %s" % (south_tar_file, startup_file)) 
+            startup_file = "%s.hk.gz" % (name) 
+            os.system("tar -rf %s -C %s %s" % (north_tar_file, startup_dir, startup_file)) 
+            os.system("tar -rf %s -C %s %s" % (south_tar_file, startup_dir, startup_file)) 
             # add to database
             c.execute("insert into startup(detector, name,processed_time) VALUES(?, ?, datetime(now()))" % (detector_id, name))
 

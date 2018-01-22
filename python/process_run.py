@@ -26,7 +26,7 @@ c = db.cursor()
 
 
 def is_in_db(detid,db_name,run, filename): 
-    c.execute("select count(id) from ? where detector=? and run=? and filename=?", ( db_name, detid, run, filename))
+    c.execute("select count(id) from %s where filename=? and run=? and detid=?" % (db_name,), (filename, run, detid))
     return int(c.fetchone()[0])
 
 
@@ -82,7 +82,7 @@ def process_run(det_id, data_dir, run):
             if ftype != "event": 
                 os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )
                 os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
-                c.execute("insert into ?(run, detector, filename, bytes, processed_time) VALUES(?,?,?,?, datetime(now()))" % (ftype, run, det_id, i, os.stat(f).st_size))
+                c.execute("insert into %s(run, detector, filename, bytes, processed_time) VALUES(?,?,?,?, datetime(now()))" % (ftype,),(run, det_id, i, os.stat(f).st_size))
 
             else:
                 # generate filtered file 
@@ -92,7 +92,7 @@ def process_run(det_id, data_dir, run):
                 if ret == 0: 
                     os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, filtered) )
                     os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
-                    c.execute("insert into ?(run, detector, filename, bytes, processed_time) VALUES(?,?,?,?, datetime(now()))" % (ftype, run, det_id, i, os.stat(filtered).st_size))
+                    c.execute("insert into %s(run, detector, filename, bytes, processed_time) VALUES(?,?,?,?, datetime(now()))" % (ftype,), (run, det_id, i, os.stat(filtered).st_size))
 
         c.commit() 
 
