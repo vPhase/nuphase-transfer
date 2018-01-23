@@ -49,6 +49,7 @@ def process_hk(detector_id, hk_dir):
     while True: 
         try: 
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
         except IOError as e: 
             if e.errno != errno.EAGAIN: 
                 raise 

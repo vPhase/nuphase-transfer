@@ -56,6 +56,7 @@ def process_run(det_id, data_dir, run):
     while True: 
         try: 
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
         except IOError as e: 
             if e.errno != errno.EAGAIN: 
                 raise 

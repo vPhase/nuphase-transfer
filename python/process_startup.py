@@ -49,6 +49,7 @@ def process_startup(detector_id, startup_dir):
     while True: 
         try: 
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break 
         except IOError as e: 
             if e.errno != errno.EAGAIN: 
                 raise 
@@ -63,6 +64,7 @@ def process_startup(detector_id, startup_dir):
             tar_us.append(f.replace("hk.gz",""))
                 
 
+    print tar_us
 
     if len(tar_us):
 
