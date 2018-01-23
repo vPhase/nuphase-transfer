@@ -50,7 +50,8 @@ def get_list_to_process(det_id, data_dir, run, filetype):
 def process_run(det_id, data_dir, run): 
 
     # make sure we only have one process on this run 
-    lock_file = open("/tmp/nuphase.process_run_%d.lock" % 20,'w+'); 
+    lockfile = cfg.run_lockfile.replace("{run}","%02d"%(run,))
+    lock_file = open(lockfile,'w+'); 
 
     while True: 
         try: 
@@ -106,7 +107,7 @@ def process_run(det_id, data_dir, run):
     os.system("touch %s" % (south_sem))
     fcntl.flock(lock_file, fcntl.LOCK_UN)
     close(lock_file) 
-    os.unlink(lock_file) 
+    os.unlink(lockfile) 
 
 if __name__=="__main__": 
 
