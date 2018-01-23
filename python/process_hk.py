@@ -79,7 +79,7 @@ def process_hk(detector_id, hk_dir):
 
                 ## create tar files
                 north_tar_file = "%s%d-%d-%d-%d-%d.tar" % (north_prefix, year, month, day, tar_us[0], tar_us[-1]); 
-                south_tar_file = "%s%%d-%d-%d-d-%d.tar" % (south_prefix_prefix, year, month, day, tar_us[0], tar_us[-1]); 
+                south_tar_file = "%s%%d-%d-%d-d-%d.tar" % (south_prefix, year, month, day, tar_us[0], tar_us[-1]); 
 
                 os.system("tar -cf %s" % (south_tar_file)) 
                 os.system("tar -cf %s"% (north_tar_file)) 

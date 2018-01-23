@@ -72,7 +72,7 @@ def process_startup(detector_id, startup_dir):
 
         ## create tar files
         north_tar_file = "%s%s-%s.tar" % (north_prefix, tar_us[0], tar_us[-1]); 
-        south_tar_file = "%s%s-%s.tar" % (south_prefix_prefix, tar_us[0], tar_us[-1]); 
+        south_tar_file = "%s%s-%s.tar" % (south_prefix, tar_us[0], tar_us[-1]); 
 
         os.system("tar -cf %s" % (south_tar_file)) 
         os.system("tar -cf %s"% (north_tar_file)) 
@@ -88,7 +88,7 @@ def process_startup(detector_id, startup_dir):
         c.commit() 
 
         north_sem = "%s%s-%s.sem" % (north_prefix, tar_us[0], tar_us[-1]); 
-        south_sem = "%s%s-%s.sem" % (south_prefix_prefix, tar_us[0], tar_us[-1]); 
+        south_sem = "%s%s-%s.sem" % (south_prefix, tar_us[0], tar_us[-1]); 
 
     fcntl.flock(lock_file, fcntl.LOCK_UN)
     
