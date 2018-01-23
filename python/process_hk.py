@@ -81,9 +81,6 @@ def process_hk(detector_id, hk_dir):
                 north_tar_file = "%s%d-%d-%d-%d-%d.tar" % (north_prefix, year, month, day, tar_us[0], tar_us[-1]); 
                 south_tar_file = "%s%%d-%d-%d-d-%d.tar" % (south_prefix, year, month, day, tar_us[0], tar_us[-1]); 
 
-                os.system("tar -cf %s" % (south_tar_file)) 
-                os.system("tar -cf %s"% (north_tar_file)) 
-
                 for hk_time in tar_us: 
 
                     hk_file = "%d/%02d/%02d/%06d.hk.gz" % (hk_dir,year,month,day,hk_time) 

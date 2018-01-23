@@ -60,8 +60,8 @@ def process_startup(detector_id, startup_dir):
     tar_us  = [] 
     for f in os.listdir(startup_dir): 
 
-        if f.endswith(".hk.gz") and not is_in_db(detector_id, f.replace("hk.gz","")) and os.stat("%s/%s" % (startup_dir, f)).st_size: 
-            tar_us.append(f.replace("hk.gz",""))
+        if f.endswith(".hk.gz") and not is_in_db(detector_id, f.replace(".hk.gz","")) and os.stat("%s/%s" % (startup_dir, f)).st_size: 
+            tar_us.append(f.replace(".hk.gz",""))
                 
 
     print tar_us
@@ -74,21 +74,21 @@ def process_startup(detector_id, startup_dir):
         north_tar_file = "%s%s-%s.tar" % (north_prefix, tar_us[0], tar_us[-1]); 
         south_tar_file = "%s%s-%s.tar" % (south_prefix, tar_us[0], tar_us[-1]); 
 
-        os.system("tar -cf %s" % (south_tar_file)) 
-        os.system("tar -cf %s"% (north_tar_file)) 
-
         for name in tar_us: 
             startup_file = "%s.hk.gz" % (name) 
             os.system("tar -rf %s -C %s %s" % (north_tar_file, startup_dir, startup_file)) 
             os.system("tar -rf %s -C %s %s" % (south_tar_file, startup_dir, startup_file)) 
             # add to database
-            c.execute("insert into startup(detector, name,processed_time) VALUES(?, ?, datetime(now()))" % (detector_id, name))
+            c.execute("insert into startup(detector, name,processed_time) VALUES(?, ?, datetime(now()))",(detector_id, name))
 
         #commit
         c.commit() 
 
-        north_sem = "%s%s-%s.sem" % (north_prefix, tar_us[0], tar_us[-1]); 
-        south_sem = "%s%s-%s.sem" % (south_prefix, tar_us[0], tar_us[-1]); 
+        north_sem = north_tar_file.replace(".tar",".sem"); 
+        south_sem = south_tar_file.replace(".tar",".sem"); 
+
+        os.system("touch %s" % (north_sem)); 
+        os.system("touch %s" % (south_sem)); 
 
     fcntl.flock(lock_file, fcntl.LOCK_UN)
     

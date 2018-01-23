@@ -67,14 +67,12 @@ def process_run(det_id, data_dir, run):
 
     south_tar_file = "%s_run%d_%d "% (south_prefix. run, int(time.time())), 
 
-    os.system ("tar -cf %s" % (south_tar_file))
 
     for ftype in ( "header", "status", "event"): 
         process_list = get_list_to_process(det_id, data_dir, run, ftype); 
 
 
         north_tar_file = "%s_r%d_%d-%d.tar", north_prefix[filetype], run, process_list[0], process_list[-1]; 
-        os.system ("tar -cf %s" % north_tar_file) 
 
         for i in process_list: 
 
