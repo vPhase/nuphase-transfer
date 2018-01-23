@@ -8,14 +8,15 @@ import sqlite3
 import time
 import os
 import sys 
+import cfg 
 
 if not 'NUPHASE_DATABASE' in os.environ: 
     print "You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" 
     sys.exit(1) 
 
 
-south_prefix = "/home/dropboxes/nuphase01/south/SPS_NUPHASE_RAW_hk_" 
-north_prefix = "/home/dropboxes/nuphase01/north/hk/SPS_NUPHASE_HK_" 
+south_prefix = cfg.hk_dropbox_south_prefix
+north_prefix = cfg.hk_dropbox_north_prefix
 
 db = sqlite3.connect(os.environ['NUPHASE_DATABASE']) 
 c = db.cursor() 
@@ -44,7 +45,7 @@ def is_in_db(detid, year, month, day, hk_time):
 def process_hk(detector_id, hk_dir):   
 
     #ensure we only have one process_hk running at once 
-    lock_file = open('/tmp/nuphase.process_hk.lock','w+'); 
+    lock_file = open(cfg.hk_lock_file,'w+'); 
 
     while True: 
         try: 
@@ -78,8 +79,13 @@ def process_hk(detector_id, hk_dir):
                 tar_us.sort() 
 
                 ## create tar files
-                north_tar_file = "%s%d-%d-%d-%d-%d.tar" % (north_prefix, year, month, day, tar_us[0], tar_us[-1]); 
-                south_tar_file = "%s%%d-%d-%d-d-%d.tar" % (south_prefix, year, month, day, tar_us[0], tar_us[-1]); 
+                north_tar_file = "%s%d-%d-%d-%d-%d.tar" % (north_prefix.replace("{detid}", "%02d" % (detector_id,)), year, month, day, tar_us[0], tar_us[-1]); 
+                south_tar_file = "%s%d-%d-%d-d-%d.tar" % (south_prefix.replace("{detid}", "%02d" % (detector_id,)), year, month, day, tar_us[0], tar_us[-1]); 
+
+                c.execute("insert into north_tar_files(tar_file) values(?)",(os.path.basename(north_tar_file),))
+                north_tar_file_id = c.lastrowid; 
+                c.execute("insert into south_tar_files(tar_file) values(?)",(os.path.basename(north_tar_file),))
+                south_tar_file_id = c.lastrowid; 
 
                 for hk_time in tar_us: 
 
@@ -87,7 +93,7 @@ def process_hk(detector_id, hk_dir):
                     os.system("tar -rf %s -C %s %s" % (north_tar_file, hk_dir, hk_file)) 
                     os.system("tar -rf %s -C %s %s" % (south_tar_file, hk_dir, hk_file)) 
                     # add to database
-                    c.execute("insert into hk(detector, hk_date,hk_time,processed_time) VALUES(?, ?, ?, datetime(now()))" % (detector_id, "%04d-%02d-%02d" % (year,month,day), hk_time))
+                    c.execute("insert into hk(detector, hk_date,hk_time,north_file_id, south_file_id) VALUES(?, ?, ?, ? ?))" % (detector_id, "%04d-%02d-%02d" % (year,month,day), hk_time, north_tar_file_id, south_tar_file_id))
 
                 #commit
                 c.commit() 

@@ -8,14 +8,15 @@ import sqlite3
 import time
 import os
 import sys 
+import cfg
 
 if not 'NUPHASE_DATABASE' in os.environ: 
     print "You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" 
     sys.exit(1) 
 
 
-south_prefix = "/home/dropboxes/nuphase01/south/SPS_NUPHASE_RAW_startup_" 
-north_prefix = "/home/dropboxes/nuphase01/north/hk/SPS_NUPHASE_HK_startup_" 
+south_prefix = cfg.startup_dropbox_south_prefix
+north_prefix = cfg.startup_dropbox_north_prefix
 
 db = sqlite3.connect(os.environ['NUPHASE_DATABASE']) 
 c = db.cursor() 
@@ -43,6 +44,7 @@ def is_in_db(detid, fname):
 # e.g. process_startup(1, "/home/radio/data/nuphase01/raw_data/startup/") 
 def process_startup(detector_id, startup_dir):   
 
+    detid = "%02d" % (detector_d,)
     #ensure we only have one process_startup running at once 
     lock_file = open('/tmp/nuphase.process_startup.lock','w+'); 
 
@@ -71,15 +73,23 @@ def process_startup(detector_id, startup_dir):
         tar_us.sort() 
 
         ## create tar files
-        north_tar_file = "%s%s-%s.tar" % (north_prefix, tar_us[0], tar_us[-1]); 
-        south_tar_file = "%s%s-%s.tar" % (south_prefix, tar_us[0], tar_us[-1]); 
+        north_tar_file = "%s%s-%s.tar" % (north_prefix.replace("{detid}",detid) tar_us[0], tar_us[-1]); 
+        south_tar_file = "%s%s-%s.tar" % (south_prefix.replace("{detid}",detid), tar_us[0], tar_us[-1]); 
+
+        c.execute("insert into north_tar_files(tar_file) values(?)",(os.path.basename(north_tar_file),))
+        north_tar_file_id = c.lastrowid; 
+        c.execute("insert into south_tar_files(tar_file) values(?)",(os.path.basename(north_tar_file),))
+        south_tar_file_id = c.lastrowid; 
+
 
         for name in tar_us: 
             startup_file = "%s.hk.gz" % (name) 
+
             os.system("tar -rf %s -C %s %s" % (north_tar_file, startup_dir, startup_file)) 
             os.system("tar -rf %s -C %s %s" % (south_tar_file, startup_dir, startup_file)) 
+
             # add to database
-            c.execute("insert into startup(detector, name,processed_time) VALUES(?, ?, datetime(now()))",(detector_id, name))
+            c.execute("insert into startup(detector, name,north_file_id, south_file_id) VALUES(?, ?, ?, ?))",(detector_id, name, north_tar_file_id, south_tar_file_id))
 
         #commit
         c.commit() 

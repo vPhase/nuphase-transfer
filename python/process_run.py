@@ -6,15 +6,14 @@ import sqlite3
 import time
 import os
 import sys 
+import cfg
 
-north_prefixes = { "header" : "/home/dropboxes/nuphase01/north/hk/SPS_NUPHASE_HEADER", "status" : "/home/dropboxes/nuphase01/north/hk/SPS_NUPHASE_STATUS", "event" : "/home/dropboxes/nuphase01/north/hk/SPS_NUPHASE_EVENT" }
+north_prefixes = cfg.run_dropbox_north_prefixes
+south_prefix = cfg.run_dropbox_south_prefix
 
-south_prefix = "/home/dropboxes/nuphase01/south/SPS_NUPHASE_RAW"; 
-
-
-n_best = 100
-n_rf = 50
-n_sw = 50
+n_best = cfg.N_best
+n_rf = cfg.N_rf
+n_sw = cfg.N_sw
 
 if not 'NUPHASE_DATABASE' in os.environ: 
     print "You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" 
@@ -65,14 +64,18 @@ def process_run(det_id, data_dir, run):
 
     
 
-    south_tar_file = "%s_run%d_%d "% (south_prefix. run, int(time.time())), 
-
+    south_tar_file = "%s_run%d_%d "% (south_prefix.replace("{detid}", "%02d" % (detid,)), run, int(time.time())), 
+    c.execute("insert into south_tar_files(tar_file) values(?)", (os.path.basename(south_tar_file),))
+    south_tar_file_id = c.lastrowid 
 
     for ftype in ( "header", "status", "event"): 
         process_list = get_list_to_process(det_id, data_dir, run, ftype); 
 
 
-        north_tar_file = "%s_r%d_%d-%d.tar", north_prefix[filetype], run, process_list[0], process_list[-1]; 
+        north_tar_file = "%s_r%d_%d-%d.tar", north_prefix[filetype].replace("{detid}","%02d" % (detid,)), run, process_list[0], process_list[-1]; 
+
+        c.execute("insert into north_tar_files(tar_file) values(?)", (os.path.basename(north_tar_file),))
+        north_tar_file_id = c.lastrowid
 
         for i in process_list: 
 
@@ -81,7 +84,7 @@ def process_run(det_id, data_dir, run):
             if ftype != "event": 
                 os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )
                 os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
-                c.execute("insert into %s(run, detector, filename, bytes, processed_time) VALUES(?,?,?,?, datetime(now()))" % (ftype,),(run, det_id, i, os.stat(f).st_size))
+                c.execute("insert into %s(run, detector, filename, bytes, north_file_id,south_file_id) VALUES(?,?,?,?,?,?)" % (ftype,),(run, det_id, i, os.stat(f).st_size,north_tar_file_id, south_tar_file_id))
 
             else:
                 # generate filtered file 
@@ -91,7 +94,7 @@ def process_run(det_id, data_dir, run):
                 if ret == 0: 
                     os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, filtered) )
                     os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
-                    c.execute("insert into %s(run, detector, filename, bytes, processed_time) VALUES(?,?,?,?, datetime(now()))" % (ftype,), (run, det_id, i, os.stat(filtered).st_size))
+                    c.execute("insert into %s(run, detector, filename, bytes, north_file_id, south_file_id) VALUES(?,?,?,?,?,?)" % (ftype,), (run, det_id, i, os.stat(filtered).st_size, north_tar_file_id, south_tar_file_id))
 
         c.commit() 
 
