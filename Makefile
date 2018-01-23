@@ -3,9 +3,9 @@
 
 BINS=cpp/nuphase-event-filter
 
-all: $(BINS) 
+all: $(BINS) nuphase-transfer.db 
 
-nuphase-transfer.db: 
+nuphase-transfer.db: sqlite/create.sql 
 	sqlite3 nuphase-transfer.db < sqlite/create.sql; 
 
 cpp/%: cpp/%.cc
