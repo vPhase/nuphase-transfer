@@ -15,7 +15,7 @@ if not 'NUPHASE_DATABASE' in os.environ:
 
 
 south_prefix = "/home/dropboxes/nuphase01/south/SPS_NUPHASE_RAW_startup_" 
-north_prefix = "/home/dropboxes/nuphase01/north/startup/SPS_NUPHASE_HK_startup_" 
+north_prefix = "/home/dropboxes/nuphase01/north/hk/SPS_NUPHASE_HK_startup_" 
 
 db = sqlite3.connect(os.environ['NUPHASE_DATABASE']) 
 c = db.cursor() 
