@@ -3,8 +3,9 @@
 # This script manages the other scripts. Some day we might read a config file, but for now, just modify things here
 
 # Right now, this is single threaded and only does one thing at a time. For one station, this is probably fine, 
-# but it won't be too hard to add parallel support 
-# For things to function properly, 
+# but it won't be too hard to add parallel support by using e.g. multiprocess.Pool with process_run. 
+
+# Recommend you don't run this directly unless you know what you're doing, but instead use shell script
 
 
 #################### BEGIN CONFIGURATION #########################
@@ -15,12 +16,15 @@ max_age_to_check_run = 5
 # The directory holding the raw data
 raw_data_dir = "/home/radio/data/nuphase{detid}/{year}/raw_data/"
 
-years = (2018) 
-detids = (1) 
+years = (2018,) 
+detids = (1,) 
 
 sleep_amount = 600 
 
 nprocs = 4; 
+ 
+
+lockfile = "/tmp/nuphase.manager.lock" 
 
 
 #################### END CONFIGURATION #########################
@@ -36,6 +40,9 @@ import time
 import signal 
 import os
 import stat
+import sys 
+import fcntl 
+
 
 
 time_to_stop = False
@@ -53,15 +60,22 @@ def loop():
 
     time_to_stop = False 
 
+    lock_file = open(lockfile,'w+'); 
+    try: 
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except: 
+        print "Could not get lock file. Is more than one manager running? lockfile"
+        sys.exit(1)
+
+
     while not time_to_stop: 
 
-        hk_tasks = [] 
-        run_tasks = [] 
-        startup_tasks = [] 
 
         for year in years: 
             for detid in detids: 
                 this_data_dir = raw_data_dir.replace("{detid}", "%02d" % (detid)).replace("{year}", str(year))
+
+                print this_data_dir
 
                 startup.process_startup(detid, this_data_dir + "/startup")
 
@@ -81,6 +95,7 @@ def loop():
         time.sleep(sleep_amount) 
 
     print "Goodbye"  
+    fcntl.flock(lock_file, fcntl.LOCK_UN)
 
 if __name__=="__main__": 
     loop() 
