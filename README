@@ -1,10 +1,19 @@
-Scripts for transferring /archiving data 
+Scripts for transferring/archiving data 
 
-The basic idea is that the runs / hk / startup files already processed are stored in a sqlite database, to avoid double counting stuff and allow for deletion later. 
+See doc/ for full manual 
 
-Because most files are named either after timestamps or event numbers, the file name is often stored as an integer in the database. This is admittedly crazy. 
+The basic idea is that the runs / hk / startup files already processed are
+stored in a sqlite database, to avoid double counting stuff and allow for
+deletion later. 
 
-To run this, use the nuphase_transfer.sh script which will set all the environmetnal variables and run the manager process in the background. 
+Because most files are named either after timestamps or event numbers, the file
+name is often stored as an integer in the database. This is admittedly crazy. 
+
+To run this, use the nuphase_transfer.sh script which will set all the
+environmental variables and run the manager process in the background. 
+
+
+
 
 
 

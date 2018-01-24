@@ -15,9 +15,6 @@ if not 'NUPHASE_DATABASE' in os.environ:
     sys.exit(1) 
 
 
-south_prefix = cfg.hk_dropbox_south_prefix
-north_prefix = cfg.hk_dropbox_north_prefix
-
 db = sqlite3.connect(os.environ['NUPHASE_DATABASE']) 
 
 def get_int_dirs(path):  
@@ -42,6 +39,11 @@ def is_in_db(c,detid, year, month, day, hk_time):
 
 # e.g. process_hk(1, "/home/radio/data/nuphase01/raw_data/hk/") 
 def process_hk(detector_id, hk_dir):   
+
+    reload(cfg) 
+    south_prefix = cfg.hk_dropbox_south_prefix
+    north_prefix = cfg.hk_dropbox_north_prefix
+
 
     #ensure we only have one process_hk running at once 
     lock_file = open(cfg.hk_lock_file,'w+'); 

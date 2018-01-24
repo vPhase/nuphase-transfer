@@ -15,9 +15,6 @@ if not 'NUPHASE_DATABASE' in os.environ:
     sys.exit(1) 
 
 
-south_prefix = cfg.startup_dropbox_south_prefix
-north_prefix = cfg.startup_dropbox_north_prefix
-
 db = sqlite3.connect(os.environ['NUPHASE_DATABASE']) 
 
 def get_int_dirs(path):  
@@ -42,6 +39,11 @@ def is_in_db(c,detid, fname):
 
 # e.g. process_startup(1, "/home/radio/data/nuphase01/raw_data/startup/") 
 def process_startup(detector_id, startup_dir):   
+
+    reload(cfg) 
+    south_prefix = cfg.startup_dropbox_south_prefix
+    north_prefix = cfg.startup_dropbox_north_prefix
+
 
     detid = "%02d" % (detector_id,)
     #ensure we only have one process_startup running at once 

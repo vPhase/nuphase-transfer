@@ -55,6 +55,7 @@ def loop():
 
     while time_to_stop == False: 
 
+        reload(cfg) 
 
         for year in cfg.years: 
             if time_to_stop: 

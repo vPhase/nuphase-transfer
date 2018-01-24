@@ -9,13 +9,6 @@ import os.path
 import sys 
 import cfg
 
-north_prefixes = cfg.run_dropbox_north_prefixes
-south_prefix = cfg.run_dropbox_south_prefix
-
-n_best = cfg.N_best
-n_rf = cfg.N_rf
-n_sw = cfg.N_sw
-
 if not 'NUPHASE_DATABASE' in os.environ: 
     print "You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" 
     sys.exit(1) 
@@ -49,6 +42,17 @@ def get_list_to_process(c,det_id, data_dir, run, filetype):
 
 
 def process_run(det_id, data_dir, run): 
+
+    # reload the config, in case it changed 
+    reload(cfg) 
+
+    north_prefixes = cfg.run_dropbox_north_prefixes
+    south_prefix = cfg.run_dropbox_south_prefix
+
+    n_best = cfg.N_best
+    n_rf = cfg.N_rf
+    n_sw = cfg.N_sw
+
 
     # make sure we only have one process on this run 
     lockfile = cfg.run_lockfile.replace("{run}","%02d"%(run,))
@@ -110,7 +114,7 @@ def process_run(det_id, data_dir, run):
 
         if processed: 
           if ftype == "event": 
-            os.system("tar -rf %s %s" % (north_tar_file,"nuphase-transfer.cfg") )
+            os.system("cd %s; echo n_best=%d n_rf=%d n_sw=%d > run%d/filter.cfg; tar -rf %s run%d/filter.cfg" % (data_dir, n_best, n_rf, n_sw, run,  north_tar_file,run) )
           north_sem = north_tar_file.replace(".tar",".sem"); 
           os.system("touch %s" % (north_sem))
 
