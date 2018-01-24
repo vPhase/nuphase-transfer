@@ -32,7 +32,7 @@ int main(int nargs, char ** args)
 {
   if (nargs < 7)
   {
-    fprintf(stderr,"Usage: nuphase-event_filter event_file.event.gz header_file.header.gz output.event.gz N_BEST N_RANDOM_RF N_RANDOM_SW\n"); 
+    fprintf(stderr,"Usage: nuphase-event_filter event_file.event.gz header_file.header.gz output.filtered.gz N_BEST N_RANDOM_RF N_RANDOM_SW\n"); 
     return 1; 
   }
 
@@ -50,9 +50,9 @@ int main(int nargs, char ** args)
   nuphase_header_t hd; 
   nuphase_event_t ev; 
 
-  while (nuphase_header_gzread(in_hd_file, &hd))
+  while (!nuphase_header_gzread(in_hd_file, &hd))
   {
-    if (! nuphase_event_gzread(in_ev_file, &ev))
+    if (nuphase_event_gzread(in_ev_file, &ev))
     {
       fprintf(stderr,"Size mismatch between headers and events. Giving up.\n"); 
       return 12; 
@@ -102,6 +102,7 @@ int main(int nargs, char ** args)
   }
 
   gzclose(out_ev_file); 
+  return 0; 
 } 
 
 

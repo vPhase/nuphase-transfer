@@ -19,7 +19,6 @@ south_prefix = cfg.hk_dropbox_south_prefix
 north_prefix = cfg.hk_dropbox_north_prefix
 
 db = sqlite3.connect(os.environ['NUPHASE_DATABASE']) 
-c = db.cursor() 
 
 def get_int_dirs(path):  
 
@@ -37,8 +36,8 @@ def get_int_dirs(path):
 
 
 
-def is_in_db(detid, year, month, day, hk_time): 
-    c.execute("select count(id) from hk where hk_date=? and hk_time=? and detector=?", ( "%04d-%02d-%02d" %( year,month, day), hk_time, det_id))
+def is_in_db(c,detid, year, month, day, hk_time): 
+    c.execute("select count(id) from hk where hk_date=? and hk_time=? and detector=?", ( "%04d-%02d-%02d" %( year,month, day), hk_time, detid))
     return int(c.fetchone()[0]) 
 
 # e.g. process_hk(1, "/home/radio/data/nuphase01/raw_data/hk/") 
@@ -61,14 +60,15 @@ def process_hk(detector_id, hk_dir):
     for year in get_int_dirs(hk_dir): 
         for month in get_int_dirs( "%s/%d" % (hk_dir,year)): 
             for day in get_int_dirs( "%s/%d/%02d" % (hk_dir,year,month)): 
+                c = db.cursor() 
 
                 tar_us  = [] 
                 for hkfile in os.listdir("%s/%d/%02d/%02d" % (hk_dir,year,month,day)): 
-                    if hkfile.endwsith(".hk.gz") and os.stat("%s/%d/%02d/%02d/%s" % (hk_dir,year,month,day,hkfile)).st_size: 
+                    if hkfile.endswith(".hk.gz") and os.stat("%s/%d/%02d/%02d/%s" % (hk_dir,year,month,day,hkfile)).st_size: 
                         try: 
-                            hk_time = int(hkfile.replace(".hk.gz",""))
-                            if is_in_db(detector_id,year,month,day,hk_time) == 0:
-                                tar_us.append(hk_time) 
+                          hk_time = int(hkfile.replace(".hk.gz",""))
+                          if is_in_db(c,detector_id,year,month,day,hk_time) == 0:
+                              tar_us.append(hk_time) 
                         except:
                             pass
                  
@@ -77,10 +77,11 @@ def process_hk(detector_id, hk_dir):
                     continue 
 
                 tar_us.sort() 
+                print "hk to process in %d-%02d-%02d: "  % (year,month,day) +  str(tar_us)
 
                 ## create tar files
-                north_tar_file = "%s%d-%d-%d-%d-%d.tar" % (north_prefix.replace("{detid}", "%02d" % (detector_id,)), year, month, day, tar_us[0], tar_us[-1]); 
-                south_tar_file = "%s%d-%d-%d-d-%d.tar" % (south_prefix.replace("{detid}", "%02d" % (detector_id,)), year, month, day, tar_us[0], tar_us[-1]); 
+                north_tar_file = "%s%d-%02d-%02d-%d-%d.tar" % (north_prefix.replace("{detid}", "%02d" % (detector_id,)), year, month, day, tar_us[0], tar_us[-1]); 
+                south_tar_file = "%s%d-%02d-%02d-%d-%d.tar" % (south_prefix.replace("{detid}", "%02d" % (detector_id,)), year, month, day, tar_us[0], tar_us[-1]); 
 
                 c.execute("insert into north_tar_files(tar_file) values(?)",(os.path.basename(north_tar_file),))
                 north_tar_file_id = c.lastrowid; 
@@ -89,14 +90,14 @@ def process_hk(detector_id, hk_dir):
 
                 for hk_time in tar_us: 
 
-                    hk_file = "%d/%02d/%02d/%06d.hk.gz" % (hk_dir,year,month,day,hk_time) 
+                    hk_file = "%d/%02d/%02d/%06d.hk.gz" % (year,month,day,hk_time) 
                     os.system("tar -rf %s -C %s %s" % (north_tar_file, hk_dir, hk_file)) 
                     os.system("tar -rf %s -C %s %s" % (south_tar_file, hk_dir, hk_file)) 
                     # add to database
-                    c.execute("insert into hk(detector, hk_date,hk_time,north_file_id, south_file_id) VALUES(?, ?, ?, ? ?))" % (detector_id, "%04d-%02d-%02d" % (year,month,day), hk_time, north_tar_file_id, south_tar_file_id))
+                    c.execute("insert into hk(detector, hk_date,hk_time,bytes, north_file_id, south_file_id) VALUES(?,?,?,?,?,?)" , (detector_id, "%04d-%02d-%02d" % (year,month,day), hk_time, os.stat("%s/%s"%(hk_dir,hk_file)).st_size, north_tar_file_id, south_tar_file_id))
 
                 #commit
-                c.commit() 
+                db.commit() 
 
                 north_sem = north_tar_file.replace(".tar",".sem"); 
                 south_sem = south_tar_file.replace(".tar",".sem"); 

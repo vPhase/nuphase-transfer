@@ -5,6 +5,7 @@ import fcntl
 import sqlite3 
 import time
 import os
+import os.path 
 import sys 
 import cfg
 
@@ -21,30 +22,30 @@ if not 'NUPHASE_DATABASE' in os.environ:
 
 
 db = sqlite3.connect(os.environ['NUPHASE_DATABASE']) 
-c = db.cursor() 
 
 
-def is_in_db(detid,db_name,run, filename): 
-    c.execute("select count(id) from %s where filename=? and run=? and detid=?" % (db_name,), (filename, run, detid))
+def is_in_db(c,detid,db_name,run, filename): 
+    c.execute("select count(id) from %s where filename=? and run=? and detector=?" % (db_name,), (filename, run, detid))
     return int(c.fetchone()[0])
 
 
 
-def get_list_to_process(det_id, data_dir, run, filetype): 
+def get_list_to_process(c,det_id, data_dir, run, filetype): 
 
     process_list = []
     process_list = []
-    for f in os.listdir("%s/%d/%s" % (data_dir, run, filetype)): 
+    for f in os.listdir("%s/run%d/%s" % (data_dir, run, filetype)): 
 
             filename = int(f.split(".")[0])
-            if not is_in_db(det_id, filetype, run, filename): 
+            if not is_in_db(c,det_id, filetype, run, filename): 
                 process_list.append(filename)
     
     process_list.sort() 
+    if len(process_list): 
+      print "process list for run %d %s : " % (run,filetype) + str(process_list)  
     return process_list
 
            
-
 
 
 def process_run(det_id, data_dir, run): 
@@ -65,48 +66,63 @@ def process_run(det_id, data_dir, run):
 
     
 
-    south_tar_file = "%s_run%d_%d "% (south_prefix.replace("{detid}", "%02d" % (detid,)), run, int(time.time())), 
+    c = db.cursor() 
+    south_tar_file = "%s_run%d_%d.tar "% (south_prefix.replace("{detid}", "%02d" % (det_id,)), run, int(time.time())) 
     c.execute("insert into south_tar_files(tar_file) values(?)", (os.path.basename(south_tar_file),))
     south_tar_file_id = c.lastrowid 
+    types_processed = 0
 
     for ftype in ( "header", "status", "event"): 
-        process_list = get_list_to_process(det_id, data_dir, run, ftype); 
+        process_list = get_list_to_process(c,det_id, data_dir, run, ftype); 
 
+        if len(process_list) == 0: 
+          continue 
 
-        north_tar_file = "%s_r%d_%d-%d.tar", north_prefix[filetype].replace("{detid}","%02d" % (detid,)), run, process_list[0], process_list[-1]; 
+        types_processed+=1
+
+        north_tar_file = "%s_run%d_%d-%d.tar" % (north_prefixes[ftype].replace("{detid}","%02d" % (det_id,)), run, process_list[0], process_list[-1] )
 
         c.execute("insert into north_tar_files(tar_file) values(?)", (os.path.basename(north_tar_file),))
         north_tar_file_id = c.lastrowid
-
+        processed = 0
         for i in process_list: 
 
-            f = "%s/%d.%s.gz" % (ftype, i, ftype) 
+            f = "run%d/%s/%d.%s.gz" % (run,ftype, i, ftype) 
+
 
             if ftype != "event": 
                 os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )
                 os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
-                c.execute("insert into %s(run, detector, filename, bytes, north_file_id,south_file_id) VALUES(?,?,?,?,?,?)" % (ftype,),(run, det_id, i, os.stat(f).st_size,north_tar_file_id, south_tar_file_id))
+                c.execute("insert into %s(run, detector, filename, bytes, north_file_id,south_file_id) VALUES(?,?,?,?,?,?)" % (ftype,),(run, det_id, i, os.stat("%s/%s" % (data_dir,f)).st_size,north_tar_file_id, south_tar_file_id))
+                processed += 1 
 
             else:
                 # generate filtered file 
 
                 filtered = f.replace("event.gz","filtered.gz") 
-                ret = os.system("nuphase-event-filter %s %s %s %d %d %d", f, f.replace("event","header"), filtered, n_best, n_rf, n_sw) 
+                ret = os.system("cd %s; nuphase-event-filter %s %s %s %d %d %d" %(data_dir, f, f.replace("event","header"), filtered, n_best, n_rf, n_sw)) 
                 if ret == 0: 
                     os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, filtered) )
                     os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
-                    c.execute("insert into %s(run, detector, filename, bytes, north_file_id, south_file_id) VALUES(?,?,?,?,?,?)" % (ftype,), (run, det_id, i, os.stat(filtered).st_size, north_tar_file_id, south_tar_file_id))
-
-        c.commit() 
-
-        north_sem = north_tar_file.replace(".tar",".sem"); 
-        os.system("touch %s" % (north_sem))
+                    c.execute("insert into event(run, detector, filename, bytes, north_file_id, south_file_id, nbest, nrf, nsw) VALUES(?,?,?,?,?,?,?,?,?)", (run, det_id, i, os.stat("%s/%s" % (data_dir,filtered)).st_size, north_tar_file_id, south_tar_file_id, n_best, n_rf, n_sw))
+                    processed += 1
 
 
-    south_sem = south_tar_file.replace(".tar",".sem"); 
-    os.system("touch %s" % (south_sem))
+        if processed: 
+          if ftype == "event": 
+            os.system("tar -rf %s %s" % (north_tar_file,"nuphase-transfer.cfg") )
+          north_sem = north_tar_file.replace(".tar",".sem"); 
+          os.system("touch %s" % (north_sem))
+
+  
+
+    if types_processed: 
+      db.commit() 
+      south_sem = south_tar_file.replace(".tar",".sem"); 
+      os.system("touch %s" % (south_sem))
+
     fcntl.flock(lock_file, fcntl.LOCK_UN)
-    close(lock_file) 
+    lock_file.close() 
     os.unlink(lockfile) 
 
 if __name__=="__main__": 

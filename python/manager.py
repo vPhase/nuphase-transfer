@@ -31,7 +31,9 @@ time_to_stop = False
 
 
 def handle_signal(signum, frame): 
+    global time_to_stop 
     print "Caught deadly signal %d..." % (signum) 
+    print "Will quit after current transaction" 
     time_to_stop = True
 
 signal.signal(signal.SIGINT, handle_signal) 
@@ -40,6 +42,7 @@ signal.signal(signal.SIGTERM, handle_signal)
 
 def loop(): 
 
+    global time_to_stop 
     time_to_stop = False 
 
     lock_file = open(cfg.manager_lockfile,'w+'); 
@@ -50,14 +53,14 @@ def loop():
         sys.exit(1)
 
 
-    while not time_to_stop: 
+    while time_to_stop == False: 
 
 
         for year in cfg.years: 
+            if time_to_stop: 
+              break 
             for detid in cfg.detids: 
-                this_data_dir = raw_data_dir.replace("{detid}", "%02d" % (detid)).replace("{year}", str(year))
-
-                print this_data_dir
+                this_data_dir = cfg.raw_data_dir.replace("{detid}", "%02d" % (detid)).replace("{year}", str(year))
 
                 startup.process_startup(detid, this_data_dir + "/startup")
 
@@ -65,16 +68,20 @@ def loop():
 
                 #now loop over runs and check if they should be processed 
                 for subdir in sorted(os.listdir(this_data_dir), reverse=True): 
+                     
+                    if time_to_stop: 
+                      break 
 
                     if subdir.startswith("run") and subdir[3:].isdigit(): 
                         stinfo = os.stat(this_data_dir + "/" + subdir)
-                        age = time.time() - stinfo.mtime 
-                        if stat.S_ISDIR(stinfo.st_mode) and age < cfg.max_age_to_check_run and age > cfg.min_age_to_check_run
+                        age = time.time() - stinfo.st_mtime 
+                        if stat.S_ISDIR(stinfo.st_mode) and age < cfg.max_age_to_check_run and age > cfg.min_age_to_check_run: 
                             # is a directory, and not too old, let's do it
                             run.process_run(detid, this_data_dir, int(subdir[3:])) 
 
 
-        time.sleep(cfg.sleep_amount) 
+        if not time_to_stop: 
+          time.sleep(cfg.sleep_amount) 
 
     print "Goodbye"  
     fcntl.flock(lock_file, fcntl.LOCK_UN)

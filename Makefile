@@ -10,7 +10,7 @@ nuphase-transfer.db: sqlite/create.sql
 	ln -f nuphase-transfer.db .nuphase-transfer.db.harder_to_accidentally_delete
 
 python/cfg.py: 
-	ln -s ../nuphase.cfg python/cfg.py 
+	ln -s ../nuphase-transfer.cfg python/cfg.py 
 
 cpp/%: cpp/%.cc
 	g++ $< -o $@ -L../libnuphase -lnuphase -I../libnuphase  -lz
