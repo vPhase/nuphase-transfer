@@ -31,6 +31,8 @@ def get_list_to_process(c,det_id, data_dir, run, filetype):
     
     for d,sd,fs in os.walk("%s/run%d/%s" % (data_dir, run, filetype)): 
         for f in fs: 
+          if f[0]==".": 
+            continue  #skip hidden files 
 #       try: 
           filename = (os.path.join(d,f).replace("%s/run%d/%s/" % (data_dir, run, filetype),"")) if filetype in ("cfg","aux") else int(f.split(".")[0])
           if not is_in_db(c,det_id, filetype, run, filename): 
@@ -90,7 +92,9 @@ def process_run(det_id, data_dir, run):
 
         types_processed+=1
 
-        north_tar_file = "%s_run%d_%d-%d.tar" % (north_prefixes[ftype].replace("{detid}","%02d" % (det_id,)), run, process_list[0], process_list[-1] )
+
+        suffix  = str(time.time()) if ftype in ("aux","cfg") else "%d_%d" % (process_list[0], process_list[-1]) 
+        north_tar_file = "%s_run%d_%s.tar" % (north_prefixes[ftype].replace("{detid}","%02d" % (det_id,)), run, suffix )  
 
         c.execute("insert into north_tar_files(tar_file) values(?)", (os.path.basename(north_tar_file),))
         north_tar_file_id = c.lastrowid
