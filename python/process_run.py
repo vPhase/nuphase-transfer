@@ -29,11 +29,12 @@ def get_list_to_process(c,det_id, data_dir, run, filetype):
     process_list = []
 
     
-    for d,sd,f in os.walk("%s/run%d/%s" % (data_dir, run, filetype)): 
+    for d,sd,fs in os.walk("%s/run%d/%s" % (data_dir, run, filetype)): 
+        for f in fs: 
 #       try: 
-         filename = (os.path.join(d,f).replace("%s/run%d/%s/" % (data_dir, run, filetype),"")) if filetype in ("cfg","aux") else int(f.split(".")[0])
-         if not is_in_db(c,det_id, filetype, run, filename): 
-            process_list.append(filename)
+          filename = (os.path.join(d,f).replace("%s/run%d/%s/" % (data_dir, run, filetype),"")) if filetype in ("cfg","aux") else int(f.split(".")[0])
+          if not is_in_db(c,det_id, filetype, run, filename): 
+             process_list.append(filename)
 #       except: 
 #         traceback.print_tb(sys.exc_info()[2])
 #         pass 
