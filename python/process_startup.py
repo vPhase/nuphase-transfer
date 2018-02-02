@@ -80,7 +80,7 @@ def process_startup(detector_id, startup_dir):
 
         c.execute("insert into north_tar_files(tar_file) values(?)",(os.path.basename(north_tar_file),))
         north_tar_file_id = c.lastrowid; 
-        c.execute("insert into south_tar_files(tar_file) values(?)",(os.path.basename(north_tar_file),))
+        c.execute("insert into south_tar_files(tar_file) values(?)",(os.path.basename(south_tar_file),))
         south_tar_file_id = c.lastrowid; 
 
 
