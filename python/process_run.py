@@ -3,6 +3,7 @@
 
 import fcntl 
 import sqlite3 
+import traceback 
 import time
 import os
 import os.path 
@@ -31,10 +32,11 @@ def get_list_to_process(c,det_id, data_dir, run, filetype):
     for d,sd,f in os.walk("%s/run%d/%s" % (data_dir, run, filetype)): 
        try: 
          filename = os.path.join(d,f).replace("%s/run%d/%s/" % (data_dir, run, filetype),"") if filetype in ("cfg","aux") else int(f.split(".")[0])
+         if not is_in_db(c,det_id, filetype, run, filename): 
+            process_list.append(filename)
        except: 
+         traceback.print_tb(sys.exc_info()[2])
          pass 
-       if not is_in_db(c,det_id, filetype, run, filename): 
-          process_list.append(filename)
 
     process_list.sort() 
     if len(process_list): 
