@@ -76,6 +76,7 @@ def process_hk(detector_id, hk_dir):
                  
                 
                 if len(tar_us) == 0: 
+                    db.commit() 
                     continue 
 
                 tar_us.sort() 

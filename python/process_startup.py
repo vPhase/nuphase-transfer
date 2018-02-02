@@ -95,7 +95,6 @@ def process_startup(detector_id, startup_dir):
             c.execute("insert into startup(detector, name,bytes,north_file_id, south_file_id) VALUES(?, ?,?, ?, ?)",(detector_id, name, os.stat("%s/%s" % (startup_dir, startup_file)).st_size, north_tar_file_id, south_tar_file_id))
 
         #commit
-        db.commit() 
 
         north_sem = north_tar_file.replace(".tar",".sem"); 
         south_sem = south_tar_file.replace(".tar",".sem"); 
@@ -103,6 +102,8 @@ def process_startup(detector_id, startup_dir):
         os.system("touch %s" % (north_sem)); 
         os.system("touch %s" % (south_sem)); 
 
+
+    db.commit() 
     fcntl.flock(lock_file, fcntl.LOCK_UN)
     
 

@@ -124,6 +124,8 @@ def process_run(det_id, data_dir, run):
       db.commit() 
       south_sem = south_tar_file.replace(".tar",".sem"); 
       os.system("touch %s" % (south_sem))
+    else: 
+      db.rollback() 
 
     fcntl.flock(lock_file, fcntl.LOCK_UN)
     lock_file.close() 
