@@ -26,13 +26,16 @@ def is_in_db(c,detid,db_name,run, filename):
 def get_list_to_process(c,det_id, data_dir, run, filetype): 
 
     process_list = []
-    process_list = []
-    for f in os.listdir("%s/run%d/%s" % (data_dir, run, filetype)): 
 
-            filename = int(f.split(".")[0])
-            if not is_in_db(c,det_id, filetype, run, filename): 
-                process_list.append(filename)
     
+    for d,sd,f in os.walk("%s/run%d/%s" % (data_dir, run, filetype)): 
+       try: 
+         filename = os.path.join(d,f).replace("%s/run%d/%s/" % (data_dir, run, filetype),"") if filetype in ("cfg","aux") else int(f.split(".")[0])
+       except: 
+         pass 
+       if not is_in_db(c,det_id, filetype, run, filename): 
+          process_list.append(filename)
+
     process_list.sort() 
     if len(process_list): 
       print "process list for run %d %s : " % (run,filetype) + str(process_list)  
@@ -76,7 +79,7 @@ def process_run(det_id, data_dir, run):
     south_tar_file_id = c.lastrowid 
     types_processed = 0
 
-    for ftype in ( "header", "status", "event"): 
+    for ftype in ( "header", "status", "event", "aux", "cfg"): 
         process_list = get_list_to_process(c,det_id, data_dir, run, ftype); 
 
         if len(process_list) == 0: 
@@ -91,8 +94,7 @@ def process_run(det_id, data_dir, run):
         processed = 0
         for i in process_list: 
 
-            f = "run%d/%s/%d.%s.gz" % (run,ftype, i, ftype) 
-
+            f = "run%d/%s/%s" % (run,ftype,i) if ftype in ("aux","cfg") else "run%d/%s/%d.%s.gz" % (run,ftype, i, ftype) 
 
             if ftype != "event": 
                 os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )

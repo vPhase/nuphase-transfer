@@ -12,6 +12,12 @@ create index header_index on header(filename);
 create table event  (id integer primary key autoincrement, run integer, detector integer, filename integer, bytes integer, processed_time datetime default(datetime('now')), north_file_id integer, south_file_id integer, nbest integer, nrf integer, nsw integer) ;
 create index event_index on event(filename); 
 
+create table aux (id integer primary key autoincrement, run integer, detector integer, filename text, bytes integer, processed_time datetime default(datetime('now')), north_file_id integer, south_file_id integer ); 
+create index aux_index on aux(filename); 
+
+create table cfg (id integer primary key autoincrement, run integer, detector integer, filename text, bytes integer, processed_time datetime default(datetime('now')), north_file_id integer, south_file_id integer ); 
+create index cfg_index on cfg(filename); 
+
 create table north_tar_files (id integer primary key autoincrement, tar_file text, procesed_time datetime default(datetime('now')) ); 
 create table south_tar_files (id integer primary key autoincrement, tar_file text, procesed_time datetime default(datetime('now')) ); 
 
