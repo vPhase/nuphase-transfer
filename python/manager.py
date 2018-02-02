@@ -16,6 +16,8 @@ import cfg
 import process_hk as hk
 import process_startup as startup
 import process_run  as run
+import smtplib 
+from email.mime.text import MIMEText
 
 
 import time 
@@ -54,6 +56,7 @@ def loop():
 
 
     while time_to_stop == False: 
+      try: 
 
         reload(cfg) 
 
@@ -83,6 +86,19 @@ def loop():
 
         if not time_to_stop: 
           time.sleep(cfg.sleep_amount) 
+
+      except Exception as e: 
+
+        msg = MIMEText(str(e))
+
+        me = os.environ["USER"] + "@" + os.environ["HOSTNAME"]  
+        msg['To'] = cfg.email; 
+        msg['From'] = me
+        msg['Subject'] = "nuphase-transfer crashed :(" 
+
+        smtplib.SMTP('localhost').sendmail(me,[cfg.email], msg.as_string())
+
+        raise e
 
     print "Goodbye"  
     fcntl.flock(lock_file, fcntl.LOCK_UN)
