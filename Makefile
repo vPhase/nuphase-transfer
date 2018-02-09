@@ -1,7 +1,7 @@
 
 
 
-BINS=cpp/nuphase-event-filter
+BINS=cpp/nuphase-event-filter cpp/summarize-status cpp/summarize-hk cpp/make-monitor-plot
 
 all: $(BINS) nuphase-transfer.db  python/cfg.py
 
@@ -13,7 +13,7 @@ python/cfg.py:
 	ln -s ../nuphase-transfer.cfg python/cfg.py 
 
 cpp/%: cpp/%.cc
-	g++ $< -o $@ -L../libnuphase -lnuphase -I../libnuphase  -lz
+	g++ $< -o $@ -g -L../libnuphase -lnuphase -I../libnuphase  -lz -lsqlite3   `root-config --cflags` `root-config --ldflags` `root-config --libs`  
 
 clean: 
 	rm -f $(BINS) 

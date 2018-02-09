@@ -18,6 +18,8 @@ import process_startup as startup
 import process_run  as run
 import smtplib 
 from email.mime.text import MIMEText
+import satellite_time
+import send_monitor_email 
 
 
 import time 
@@ -42,10 +44,13 @@ signal.signal(signal.SIGINT, handle_signal)
 signal.signal(signal.SIGTERM, handle_signal) 
 
 
+
 def loop(): 
 
     global time_to_stop 
     time_to_stop = False 
+
+    last_sat = 0; 
 
     lock_file = open(cfg.manager_lockfile,'w+'); 
     try: 
@@ -59,6 +64,12 @@ def loop():
       try: 
 
         reload(cfg) 
+      
+        if satellite_time.secs_since_dscs_up() < 3*3600 and time.time() - os.stat(".last_email").m_time > 3600*12: 
+          os.system("touch .last_email"); 
+          send_monitor_email.send_email() 
+
+
 
         for year in cfg.years: 
             if time_to_stop: 
@@ -83,6 +94,7 @@ def loop():
                             # is a directory, and not too old, let's do it
                             run.process_run(detid, this_data_dir, int(subdir[3:])) 
 
+  
 
         if not time_to_stop: 
           time.sleep(cfg.sleep_amount) 
