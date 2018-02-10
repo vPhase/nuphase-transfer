@@ -8,7 +8,7 @@ import cfg
 
 def send_email(): 
  reload(cfg) 
- os.system("make-monitor-plots %s %d" % (cfg.mon_pdf_file, cfg.mon_period)) 
+ os.system("make-monitor-plot %s %d" % (cfg.mon_pdf_file, cfg.mon_period)) 
 
  msg = MIMEMultipart() 
  me = os.environ["USER"] + "@" + os.environ["HOSTNAME"]  
