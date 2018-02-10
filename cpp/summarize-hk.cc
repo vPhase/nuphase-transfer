@@ -13,7 +13,7 @@ int main(int nargs, char ** args)
 
   if (nargs < 3) 
   {
-    fprintf(stderr, "Usage: summarize_hk file.status.gz period_in_secs"); 
+    fprintf(stderr, "Usage: summarize_hk file.hk.gz period_in_secs"); 
     return 1; 
   }
 
@@ -24,6 +24,12 @@ int main(int nargs, char ** args)
   nuphase_hk_t hk; 
 
   gzFile f = gzopen(file,"r"); 
+
+  if (!f) 
+  {
+    fprintf(stderr,"Could not open %s\n", file); 
+    return 1; 
+  }
 
   sqlite3 * db = 0; 
   int rc = sqlite3_open(getenv("NUPHASE_DATABASE"), &db); 
