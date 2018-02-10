@@ -18,7 +18,7 @@ import process_startup as startup
 import process_run  as run
 import smtplib 
 from email.mime.text import MIMEText
-
+import traceback
 
 import time 
 import signal 
@@ -89,7 +89,9 @@ def loop():
 
       except Exception as e: 
 
+
         msg = MIMEText(str(e))
+	traceback.print_tb(sys.exc_info()[2])
 
         me = os.environ["USER"] + "@" + os.environ["HOSTNAME"]  
         msg['To'] = cfg.email; 
