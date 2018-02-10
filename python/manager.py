@@ -65,7 +65,7 @@ def loop():
 
         reload(cfg) 
       
-        if satellite_time.secs_since_dscs_up() < 3*3600 and time.time() - os.stat(".last_email").m_time > 3600*12: 
+        if satellite_time.secs_since_dscs_up() < 3*3600 and time.time() - os.stat(".last_email").st_mtime > 3600*12: 
           os.system("touch .last_email"); 
           send_monitor_email.send_email() 
 
