@@ -32,7 +32,7 @@ int main(int nargs, char ** args)
   }
 
   sqlite3 * db = 0; 
-  int rc = sqlite3_open(getenv("NUPHASE_DATABASE"), &db); 
+  int rc = sqlite3_open(getenv("NUPHASE_SUM_DATABASE"), &db); 
 
   if (rc) 
   {

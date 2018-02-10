@@ -103,7 +103,7 @@ int main(int nargs, char ** args)
   where.Form(" unixtime > %d ", t); 
 
   sqlite3 * db; 
-  sqlite3_open(getenv("NUPHASE_DATABASE"),&db); 
+  sqlite3_open(getenv("NUPHASE_SUM_DATABASE"),&db); 
   c.cd(1); 
   const char * columns1[4] = { "avg_rate","rate","max_rate", "min_rate" }; 
   make_plot(4, "Rates", columns1, "status_summary", where.Data(), db); 
