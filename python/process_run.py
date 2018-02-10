@@ -106,6 +106,8 @@ def process_run(det_id, data_dir, run):
             if ftype != "event": 
                 os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )
                 os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
+                if ftype == "status": 
+                  os.system("summarize-status %s/%s %d" % (data_dir,f, cfg.status_summarize_period))
                 c.execute("insert into %s(run, detector, filename, bytes, north_file_id,south_file_id) VALUES(?,?,?,?,?,?)" % (ftype,),(run, det_id, i, os.stat("%s/%s" % (data_dir,f)).st_size,north_tar_file_id, south_tar_file_id))
                 processed += 1 
 

@@ -96,6 +96,7 @@ def process_hk(detector_id, hk_dir):
                     hk_file = "%d/%02d/%02d/%06d.hk.gz" % (year,month,day,hk_time) 
                     os.system("tar -rf %s -C %s %s" % (north_tar_file, hk_dir, hk_file)) 
                     os.system("tar -rf %s -C %s %s" % (south_tar_file, hk_dir, hk_file)) 
+                    os.system("summarize-hk %s/%s %d" % (hk_dir, hk_file, cfg.hk_summarize_period)
                     # add to database
                     c.execute("insert into hk(detector, hk_date,hk_time,bytes, north_file_id, south_file_id) VALUES(?,?,?,?,?,?)" , (detector_id, "%04d-%02d-%02d" % (year,month,day), hk_time, os.stat("%s/%s"%(hk_dir,hk_file)).st_size, north_tar_file_id, south_tar_file_id))
 
