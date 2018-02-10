@@ -52,6 +52,7 @@ int main(int nargs, char ** args)
       asprintf(&statement, 
                "INSERT INTO hk_summary (unixtime, temp_master, temp_slave, temp_case, current_master, current_slave, current_frontend) VALUES(%f, %d, %d, %d, %d, %d,%d);", 
                t, hk.temp_master, hk.temp_slave, hk.temp_case, hk.current_master,hk.current_slave, hk.current_frontend); 
+      printf("%s\n",statement); 
       sqlite3_exec(db,statement,0,0,0); 
     }
   }
