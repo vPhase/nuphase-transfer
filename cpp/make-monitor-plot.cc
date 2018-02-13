@@ -8,9 +8,10 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 #include "TString.h" 
+#include <sys/stat.h>
 
 
-const int dpi = 72; 
+int dpi = 72; 
 
 
 void make_plot(int ngraphs, const char * title, const char ** columns, const char * table, const char * where,  sqlite3 * db) 
@@ -67,7 +68,7 @@ void make_plot(int ngraphs, const char * title, const char ** columns, const cha
     return; 
   }
 
-  TH2I axis("axis",title, 10, gs[0]->GetX()[0], gs[0]->GetX()[gs[0]->GetN()-1], 10, min_y*1.5, max_y*1.5); 
+  TH2I axis("axis",title, 10, gs[0]->GetX()[0], gs[0]->GetX()[gs[0]->GetN()-1], 10, min_y-0.1*min_y, max_y+0.1*max_y); 
   axis.SetStats(false); 
   axis.GetXaxis()->SetTimeDisplay(1); 
 
@@ -81,6 +82,13 @@ void make_plot(int ngraphs, const char * title, const char ** columns, const cha
     leg->AddEntry(gs[i],"", "lp"); 
   }
   leg->Draw(); 
+}
+
+static unsigned getFileSize(const char * file) 
+{
+  struct stat sb; 
+  stat(file,&sb); 
+  return sb.st_size; 
 }
 
 int main(int nargs, char ** args) 
@@ -120,6 +128,13 @@ int main(int nargs, char ** args)
   sqlite3_close(db); 
 
   c.SaveAs(outfile); 
+  while( getFileSize(outfile) > 50000)
+  {
+    /* Reduce size if too big */ 
+    printf("too big (%d bytes), reducing window by 10 percent"); 
+    c.SetWindowSize(0.9*c.GetWindowWidth(), 0.9 * c.GetWindowHeight()); 
+    c.SaveAs(outfile); 
+  }
 
   return 0; 
 }
