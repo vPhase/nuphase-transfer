@@ -57,7 +57,7 @@ def process_run(det_id, data_dir, run):
     north_prefixes = cfg.run_dropbox_north_prefixes
     south_prefix = cfg.run_dropbox_south_prefix
 
-    n_best = cfg.N_best
+    n_calib = cfg.N_calib
     n_rf = cfg.N_rf
     n_sw = cfg.N_sw
 
@@ -115,17 +115,17 @@ def process_run(det_id, data_dir, run):
                 # generate filtered file 
 
                 filtered = f.replace("event.gz","filtered.gz") 
-                ret = os.system("cd %s; nuphase-event-filter %s %s %s %d %d %d" %(data_dir, f, f.replace("event","header"), filtered, n_best, n_rf, n_sw)) 
+                ret = os.system("cd %s; nuphase-event-filter %s %s %s %d %d %d" %(data_dir, f, f.replace("event","header"), filtered, n_calib, n_rf, n_sw)) 
                 if ret == 0: 
                     os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, filtered) )
                     os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
-                    c.execute("insert into event(run, detector, filename, bytes, north_file_id, south_file_id, nbest, nrf, nsw) VALUES(?,?,?,?,?,?,?,?,?)", (run, det_id, i, os.stat("%s/%s" % (data_dir,filtered)).st_size, north_tar_file_id, south_tar_file_id, n_best, n_rf, n_sw))
+                    c.execute("insert into event(run, detector, filename, bytes, north_file_id, south_file_id, nbest, nrf, nsw) VALUES(?,?,?,?,?,?,?,?,?)", (run, det_id, i, os.stat("%s/%s" % (data_dir,filtered)).st_size, north_tar_file_id, south_tar_file_id, n_calib, n_rf, n_sw))
                     processed += 1
 
 
         if processed: 
           if ftype == "event": 
-            os.system("cd %s; echo n_best=%d n_rf=%d n_sw=%d > run%d/filter.cfg; tar -rf %s run%d/filter.cfg" % (data_dir, n_best, n_rf, n_sw, run,  north_tar_file,run) )
+            os.system("cd %s; echo n_calib=%d n_rf=%d n_sw=%d > run%d/filter.cfg; tar -rf %s run%d/filter.cfg" % (data_dir, n_calib, n_rf, n_sw, run,  north_tar_file,run) )
           north_sem = north_tar_file.replace(".tar",".sem"); 
           os.system("touch %s" % (north_sem))
 
