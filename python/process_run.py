@@ -9,6 +9,7 @@ import os
 import os.path 
 import sys 
 import cfg
+import libconf
 
 if not 'NUPHASE_DATABASE' in os.environ: 
     print "You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" 
@@ -112,15 +113,30 @@ def process_run(det_id, data_dir, run):
                 processed += 1 
 
             else:
-                # generate filtered file 
 
-                filtered = f.replace("event.gz","filtered.gz") 
-                ret = os.system("cd %s; nuphase-event-filter %s %s %s %d %d %d" %(data_dir, f, f.replace("event","header"), filtered, n_calib, n_rf, n_sw)) 
-                if ret == 0: 
-                    os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, filtered) )
-                    os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
-                    c.execute("insert into event(run, detector, filename, bytes, north_file_id, south_file_id, nbest, nrf, nsw) VALUES(?,?,?,?,?,?,?,?,?)", (run, det_id, i, os.stat("%s/%s" % (data_dir,filtered)).st_size, north_tar_file_id, south_tar_file_id, n_calib, n_rf, n_sw))
-                    processed += 1
+                # check if we should just send the whole thing 
+               
+                acq_cfg_f = io.open("%s/run%d/cfg/acq.cfg"); 
+                acq_cfg = libconf.load(acq_cfg_f);  
+
+                if 'send_all' in acq_cfg['output'] and acq_cfg['output']['send_all']: 
+                  if ret == 0: 
+                      os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )
+                      os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
+                      c.execute("insert into event(run, detector, filename, bytes, north_file_id, south_file_id, nbest, nrf, nsw) VALUES(?,?,?,?,?,?,?,?,?)", (run, det_id, i, os.stat("%s/%s" % (data_dir,filtered)).st_size, north_tar_file_id, south_tar_file_id, -1, -1, -1))
+                      processed += 1
+                   
+
+                else:
+                  # generate filtered file 
+
+                  filtered = f.replace("event.gz","filtered.gz") 
+                  ret = os.system("cd %s; nuphase-event-filter %s %s %s %d %d %d" %(data_dir, f, f.replace("event","header"), filtered, n_calib, n_rf, n_sw)) 
+                  if ret == 0: 
+                      os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, filtered) )
+                      os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
+                      c.execute("insert into event(run, detector, filename, bytes, north_file_id, south_file_id, nbest, nrf, nsw) VALUES(?,?,?,?,?,?,?,?,?)", (run, det_id, i, os.stat("%s/%s" % (data_dir,filtered)).st_size, north_tar_file_id, south_tar_file_id, n_calib, n_rf, n_sw))
+                      processed += 1
 
 
         if processed: 
