@@ -68,10 +68,11 @@ void make_plot(int ngraphs, const char * title, const char ** columns, const cha
     return; 
   }
 
-  TH2I axis("axis",title, 10, gs[0]->GetX()[0], gs[0]->GetX()[gs[0]->GetN()-1], 10, min_y-0.1*min_y, max_y+0.1*max_y); 
+  TH2I axis("axis",title, 10, gs[0]->GetX()[0], gs[0]->GetX()[gs[0]->GetN()-1], 10, min_y-0.1*min_y, max_y+0.5*max_y); 
   axis.SetStats(false); 
   axis.GetXaxis()->SetTimeDisplay(1); 
-
+  axis.GetXaxis()->SetLabelSize(2*axis.GetXaxis()->GetLabelSize());
+  axis.GetYaxis()->SetLabelSize(2*axis.GetYaxis()->GetLabelSize());
   axis.DrawCopy(); 
 
 
