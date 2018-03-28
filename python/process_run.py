@@ -10,6 +10,7 @@ import os.path
 import sys 
 import cfg
 import libconf
+import io 
 
 if not 'NUPHASE_DATABASE' in os.environ: 
     print "You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" 
@@ -116,7 +117,7 @@ def process_run(det_id, data_dir, run):
 
                 # check if we should just send the whole thing 
                
-                acq_cfg_f = io.open("%s/run%d/cfg/acq.cfg"); 
+                acq_cfg_f = io.open("%s/run%d/cfg/acq.cfg" % (data_dir, run)); 
                 acq_cfg = libconf.load(acq_cfg_f);  
 
                 if 'send_all' in acq_cfg['output'] and acq_cfg['output']['send_all']: 

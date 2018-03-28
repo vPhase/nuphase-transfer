@@ -252,7 +252,7 @@ class TokenStream:
 
         if filename in seenfiles:
             raise ConfigParseError("Circular include: %r" % (filename,))
-        seenfiles = seenfiles | {filename}  # Copy seenfiles, don't alter it.
+        seenfiles = seenfiles | set([filename])  # Copy seenfiles, don't alter it.
 
         tokenizer = Tokenizer(filename=filename)
         lines = []
