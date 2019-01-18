@@ -36,7 +36,15 @@ def get_list_to_process(c,det_id, data_dir, run, filetype):
           if f[0]==".": 
             continue  #skip hidden files 
 #       try: 
-          filename = (os.path.join(d,f).replace("%s/run%d/%s/" % (data_dir, run, filetype),"")) if filetype in ("cfg","aux") else int(f.split(".")[0])
+          filename = None 
+          if filetype in ("cfg","aux"): 
+            filename = (os.path.join(d,f).replace("%s/run%d/%s/" % (data_dir, run, filetype),"")) 
+          else:
+            splits = f.split(".")
+            filename = int(splits[0])
+##### HACK HACK  HACK. Surface events have NEGATIVE filenames #$$$$ 
+            if "surface" in splits[1]: 
+              filename *=-1
           if not is_in_db(c,det_id, filetype, run, filename): 
              process_list.append(filename)
 #       except: 
@@ -103,7 +111,7 @@ def process_run(det_id, data_dir, run):
         processed = 0
         for i in process_list: 
 
-            f = "run%d/%s/%s" % (run,ftype,i) if ftype in ("aux","cfg") else "run%d/%s/%d.%s.gz" % (run,ftype, i, ftype) 
+            f = "run%d/%s/%s" % (run,ftype,i) if ftype in ("aux","cfg") else "run%d/%s/%d.%s%s.gz" % (run,ftype, abs(i), "surface_" if i < 0 else "",  ftype) 
 
             if ftype != "event": 
                 os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )
@@ -120,12 +128,12 @@ def process_run(det_id, data_dir, run):
                 acq_cfg_f = io.open("%s/run%d/cfg/acq.cfg" % (data_dir, run)); 
                 acq_cfg = libconf.load(acq_cfg_f);  
 
-                if 'send_all' in acq_cfg['output'] and acq_cfg['output']['send_all']: 
-                  if ret == 0: 
-                      os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )
-                      os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
-                      c.execute("insert into event(run, detector, filename, bytes, north_file_id, south_file_id, nbest, nrf, nsw) VALUES(?,?,?,?,?,?,?,?,?)", (run, det_id, i, os.stat("%s/%s" % (data_dir,filtered)).st_size, north_tar_file_id, south_tar_file_id, -1, -1, -1))
-                      processed += 1
+                #send whole file if surface
+                if i < 0 or ('send_all' in acq_cfg['output'] and acq_cfg['output']['send_all']): 
+                    os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )
+                    os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
+                    c.execute("insert into event(run, detector, filename, bytes, north_file_id, south_file_id, nbest, nrf, nsw) VALUES(?,?,?,?,?,?,?,?,?)", (run, det_id, i, os.stat("%s/%s" % (data_dir,filtered)).st_size, north_tar_file_id, south_tar_file_id, -1, -1, -1))
+                    processed += 1
                    
 
                 else:
