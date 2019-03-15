@@ -125,11 +125,17 @@ def process_run(det_id, data_dir, run):
 
                 # check if we should just send the whole thing 
                
-                acq_cfg_f = io.open("%s/run%d/cfg/acq.cfg" % (data_dir, run)); 
-                acq_cfg = libconf.load(acq_cfg_f);  
+                send_all = False
+                try: 
+                  acq_cfg_f = io.open("%s/run%d/cfg/acq.cfg" % (data_dir, run)); 
+                  acq_cfg = libconf.load(acq_cfg_f);  
+                  send_all = 'send_all' in acq_cfg['output'] and acq_cfg['output']['send_all']
+                except:
+                  print "couldn't open acq.cfg" 
+
 
                 #send whole file if surface
-                if i < 0 or ('send_all' in acq_cfg['output'] and acq_cfg['output']['send_all']): 
+                if i < 0 or send_all: 
                     os.system("tar -rf %s -C %s %s" % (north_tar_file, data_dir, f) )
                     os.system("tar -rf %s -C %s %s" % (south_tar_file, data_dir, f) )
                     c.execute("insert into event(run, detector, filename, bytes, north_file_id, south_file_id, nbest, nrf, nsw) VALUES(?,?,?,?,?,?,?,?,?)", (run, det_id, i, os.stat("%s/%s" % (data_dir,f)).st_size, north_tar_file_id, south_tar_file_id, -1, -1, -1))
