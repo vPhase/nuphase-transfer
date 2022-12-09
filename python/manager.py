@@ -103,7 +103,7 @@ def loop():
 
 
         msg = MIMEText(str(e))
-	traceback.print_tb(sys.exc_info()[2])
+        traceback.print_tb(sys.exc_info()[2])
 
         me = os.environ["USER"] + "@" + os.environ["HOSTNAME"]  
         msg['To'] = cfg.email; 
