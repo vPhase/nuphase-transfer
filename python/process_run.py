@@ -13,7 +13,7 @@ import libconf
 import io 
 
 if not 'NUPHASE_DATABASE' in os.environ: 
-    print "You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" 
+    print ("You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" )
     sys.exit(1) 
 
 
@@ -53,7 +53,7 @@ def get_list_to_process(c,det_id, data_dir, run, filetype):
 
     process_list.sort() 
     if len(process_list): 
-      print "process list for run %d %s : " % (run,filetype) + str(process_list)  
+      print ("process list for run %d %s : " % (run,filetype) + str(process_list) )
     return process_list
 
            
@@ -131,7 +131,7 @@ def process_run(det_id, data_dir, run):
                   acq_cfg = libconf.load(acq_cfg_f);  
                   send_all = 'send_all' in acq_cfg['output'] and acq_cfg['output']['send_all']
                 except:
-                  print "couldn't open acq.cfg" 
+                  print ("couldn't open acq.cfg" )
 
 
                 #send whole file if surface
@@ -176,7 +176,7 @@ def process_run(det_id, data_dir, run):
 if __name__=="__main__": 
 
     if len(sys.argv) < 3 :
-      print " usage : process_run.py detid data_dir run" 
+      print (" usage : process_run.py detid data_dir run" )
       sys.exit(1) 
 
     process_run(int(sys.argv[1]), sys.argv[2], sys.argv[3])

@@ -11,7 +11,7 @@ import sys
 import cfg 
 
 if not 'NUPHASE_DATABASE' in os.environ: 
-    print "You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" 
+    print ("You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database")
     sys.exit(1) 
 
 
@@ -80,7 +80,7 @@ def process_hk(detector_id, hk_dir):
                     continue 
 
                 tar_us.sort() 
-                print "hk to process in %d-%02d-%02d: "  % (year,month,day) +  str(tar_us)
+                print ("hk to process in %d-%02d-%02d: "  % (year,month,day) +  str(tar_us))
 
                 ## create tar files
                 north_tar_file = "%s%d-%02d-%02d-%d-%d.tar" % (north_prefix.replace("{detid}", "%02d" % (detector_id,)), year, month, day, tar_us[0], tar_us[-1]); 
@@ -119,7 +119,7 @@ def process_hk(detector_id, hk_dir):
 if __name__=="__main__": 
 
     if len(sys.argv) < 3 :
-      print " usage : process_hk.py detid hk_root" 
+      print (" usage : process_hk.py detid hk_root" )
       sys.exit(1) 
 
     process_hk(int(sys.argv[1]), sys.argv[2])

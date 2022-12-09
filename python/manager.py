@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 # This script manages the other scripts. Some day we might read a config file, but for now, just modify things here
 
@@ -36,8 +36,8 @@ time_to_stop = False
 
 def handle_signal(signum, frame): 
     global time_to_stop 
-    print "Caught deadly signal %d..." % (signum) 
-    print "Will quit after current transaction" 
+    print ("Caught deadly signal %d..." % (signum))
+    print ("Will quit after current transaction")
     time_to_stop = True
 
 signal.signal(signal.SIGINT, handle_signal) 
@@ -56,7 +56,7 @@ def loop():
     try: 
         fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except: 
-        print "Could not get lock file. Is more than one manager running? lockfile"
+        print("Could not get lock file. Is more than one manager running? lockfile")
         sys.exit(1)
 
 
@@ -114,7 +114,7 @@ def loop():
 
         raise e
 
-    print "Goodbye"  
+    print ("Goodbye") 
     fcntl.flock(lock_file, fcntl.LOCK_UN)
 
 if __name__=="__main__": 

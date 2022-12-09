@@ -11,7 +11,7 @@ import sys
 import cfg
 
 if not 'NUPHASE_DATABASE' in os.environ: 
-    print "You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" 
+    print ("You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" )
     sys.exit(1) 
 
 
@@ -72,7 +72,7 @@ def process_startup(detector_id, startup_dir):
     if len(tar_us):
 
         tar_us.sort() 
-        print "startup to process: " + str(tar_us)
+        print ("startup to process: " + str(tar_us))
 
         ## create tar files
         north_tar_file = "%s%s-%s.tar" % (north_prefix.replace("{detid}",detid), tar_us[0], tar_us[-1]); 
@@ -112,7 +112,7 @@ def process_startup(detector_id, startup_dir):
 if __name__=="__main__": 
 
     if len(sys.argv) < 3 :
-      print " usage : process_startup.py detid startup_root" 
+      print (" usage : process_startup.py detid startup_root" )
       sys.exit(1) 
 
     process_startup(int(sys.argv[1]), sys.argv[2])
