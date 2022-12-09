@@ -9,6 +9,7 @@ import time
 import os
 import sys 
 import cfg
+from importlib import reload 
 
 if not 'NUPHASE_DATABASE' in os.environ: 
     print ("You must define the NUPHASE_DATABASE environmental variable to point to the appropriate sqlite3 database" )
