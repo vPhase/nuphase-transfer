@@ -5,6 +5,7 @@ import time
 import os
 import os.path
 import cfg
+from importlib import reload
 
 def send_email(): 
  reload(cfg) 
