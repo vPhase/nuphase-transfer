@@ -17,7 +17,7 @@ def send_email():
  msg['To'] = cfg.email 
  msg['Subject'] = 'Daily NuPhase Monitoring Report' 
 
- the_file = open(cfg.mon_file)
+ the_file = open(cfg.mon_file,'rb')
  the_data = the_file.read() 
  the_file.close() 
  file_type = cfg.mon_file.split(".")[-1]; 
