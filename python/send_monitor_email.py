@@ -14,7 +14,7 @@ def send_email():
  msg = MIMEMultipart() 
  me = os.environ["USER"] + "@" + os.environ["HOSTNAME"]  
  msg['From'] = me
- msg['To'] = cfg.email 
+ msg['To'] = ", ".join(cfg.emails)
  msg['Subject'] = 'Daily NuPhase Monitoring Report' 
 
  the_file = open(cfg.mon_file,'rb')
@@ -24,7 +24,7 @@ def send_email():
  attach = MIMEApplication(the_data, file_type); 
  attach.add_header('Content-Disposition', 'attachment', filename=os.path.basename(cfg.mon_file).replace(".%s" % (file_type,), "-%s.%s" % (time.strftime("%Y-%m-%d"), file_type)))
  msg.attach(attach); 
- smtplib.SMTP('localhost').sendmail(me,[cfg.email], msg.as_string())
+ smtplib.SMTP('localhost').sendmail(me,cfg.emails, msg.as_string())
 
 
 
