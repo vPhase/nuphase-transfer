@@ -6,7 +6,9 @@
 #include "TLegend.h" 
 #include "TH2.h" 
 #include <stdio.h> 
+#include "TMath.h"
 #include <stdlib.h> 
+#include <string.h>
 #include "TString.h" 
 #include <sys/stat.h>
 
@@ -25,7 +27,6 @@ void make_plot(int ngraphs, const char * title, const char ** columns, const cha
     gs[i]->SetTitle(columns[i]); 
     gs[i]->SetLineColor(i+1); 
     gs[i]->SetMarkerColor(i+1); 
-
     str += ","; 
     str += columns[i]; 
   }
@@ -80,7 +81,14 @@ void make_plot(int ngraphs, const char * title, const char ** columns, const cha
   for (int i = 0; i < ngraphs; i++) 
   {
     gs[i]->Draw("lpsame"); 
-    leg->AddEntry(gs[i],"", "lp"); 
+    char * renamed = strdup(columns[i]);
+    char * c = strstr(renamed,"slave");
+    if (c) memcpy(c,"auxbd", 5);
+    c = strstr(renamed,"master");
+    if (c) memcpy(c,"mainbd",6);
+
+    leg->AddEntry(gs[i],TString::Format("%s (max: %g)", renamed, TMath::MaxElement(gs[i]->GetN(), gs[i]->GetY())), "lp"); 
+    free(renamed);
   }
   leg->Draw(); 
 }
